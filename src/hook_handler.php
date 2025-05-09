@@ -79,6 +79,8 @@ function sendEditRequest(array $data, string $resourceUri, ?int $resourceId = nu
         $uri .= '/' . $resourceId;
     }
 
+    logToConsole($uri, $data);
+
     logToConsole('URI: ' . $uri);
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
