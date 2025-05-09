@@ -21,5 +21,5 @@ function logToConsole(string $message, array $context = []): void
         $output .= ' => ' . json_encode($context, JSON_UNESCAPED_UNICODE);
     }
 
-    fwrite(STDOUT, $output . PHP_EOL);
+    error_log($output);
 }

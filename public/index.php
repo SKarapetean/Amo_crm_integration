@@ -56,15 +56,10 @@ function getRequestData(): array
 
 $envPath = __DIR__ . '/../.env';
 $envSecondPath = __DIR__ . '/.env';
-if (file_exists($envPath)) {
-    loadEnv($envPath);
-    logToConsole('Env first path');
+if (getenv('RENDER')) {
+    error_log('RENDER: ' . getenv('RENDER'));
 }
 
-if (file_exists($envSecondPath)) {
-    loadEnv($envSecondPath);
-    logToConsole('Env second path');
-}
 //loadEnv(__DIR__ . '/../.env');
 
 $requestUri = $_SERVER['REQUEST_URI'];
