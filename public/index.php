@@ -4,6 +4,7 @@ header('Content-Type: application/json');
 
 require_once __DIR__ . '/../src/hook_handler.php';
 require_once __DIR__ . '/../src/logger.php';
+require_once __DIR__ . '/../src/auth.php';
 
 function getRequestData(): array
 {
@@ -31,7 +32,31 @@ $requestUri = $_SERVER['REQUEST_URI'];
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
-    if ($method === 'POST') {
+    if ($method === 'GET') {
+        if (str_starts_with($requestUri, '/code_auth')) {
+            $code = $_GET['code'] ?? '';
+
+            if (!empty($code)) {
+                $out = sendAuthRequest('authorization_code', $code);
+                $response = json_decode($out, true);
+
+                $tokenData = [
+                    'access_token' => $response['access_token'],
+                    'refresh_token' => $response['refresh_token'],
+                    'token_type' => $response['token_type'],
+                    'expires' => $response['expires_in'],
+                ];
+                saveToken($tokenData);
+                echo json_encode(['success' => true]);
+            } else {
+                http_response_code(422);
+                echo json_encode(['error' => 'Invalid request parameters.']);
+            }
+        } else {
+            http_response_code(404);
+            echo json_encode(['error' => 'Route not found']);
+        }
+    } else if ($method === 'POST') {
         $data = getRequestData();
         if (str_starts_with($requestUri, '/contact/edit')) {
             resourceEdited('contacts', $_POST);

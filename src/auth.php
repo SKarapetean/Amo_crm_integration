@@ -17,24 +17,13 @@ function getToken(): array
         return $accessToken;
     } else {
         logToConsole('Token not found:');
-        $out = sendAuthRequest('authorization_code');
-        $response = json_decode($out, true);
-
-        $tokenData = [];
-        $tokenData['access_token'] = $response['access_token'];
-        $tokenData['refresh_token'] = $response['refresh_token'];
-        $tokenData['token_type'] = $response['token_type'];
-        $tokenData['expires'] = $response['expires_in'];
-
-        saveToken($tokenData);
-
-        return $tokenData;
+        return [];
     }
 }
 
 function saveToken(array $accessToken): void
 {
-    logToConsole('Save token request:');
+    logToConsole('Save token');
     if (
         !empty($accessToken)
         && isset($accessToken['access_token'])
@@ -69,7 +58,7 @@ function refreshToken(): void
     saveToken($tokenData);
 }
 
-function sendAuthRequest(string $grantType, ?string $refreshToken = null)
+function sendAuthRequest(string $grantType, ?string $token = null)
 {
     $data = [
         'client_id' => getenv('CLIENT_ID'),
@@ -78,17 +67,15 @@ function sendAuthRequest(string $grantType, ?string $refreshToken = null)
         'redirect_uri' => getenv('REDIRECT_URI'),
     ];
 
-    if ($grantType == 'refresh_token') {
-        if (isset($refreshToken)) {
-            $data['refresh_token'] = $refreshToken;
-        } else {
-            $grantType = 'authorization_code';
-            $data['grant_type'] = $grantType;
-        }
-    }
-
-    if ($grantType == 'authorization_code') {
-        $data['code'] = getenv('CODE');
+    switch ($grantType) {
+        case 'authorization_code':
+            $data['code'] = $token;
+            break;
+        case 'refresh_token':
+            $data['refresh_token'] = $token;
+            break;
+        default:
+            throw  new \Exception('Unsupported grant type: ' . $grantType);
     }
 
     $curl = curl_init();
@@ -128,6 +115,6 @@ function sendAuthRequest(string $grantType, ?string $refreshToken = null)
             'response' => json_encode($out),
         ]);
 
-//        die('Ошибка: ' . $e->getMessage() . PHP_EOL . 'Код ошибки: ' . $e->getCode());
+        die('Ошибка: ' . $e->getMessage() . PHP_EOL . 'Код ошибки: ' . $e->getCode());
     }
 }
