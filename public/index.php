@@ -11,7 +11,7 @@ function checkHook(): void
     $clientSecret = getenv('CLIENT_SECRET');
 
     if (empty($_GET['client_uuid']) || empty($_GET['signature']) || empty($_GET['account_id'])) {
-        throw new \HttpInvalidParamException('Wrong hook format');
+        throw new \Exception('Wrong hook format');
     }
 
     $hookClientId = $_GET['client_uuid'];
