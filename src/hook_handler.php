@@ -19,7 +19,14 @@ function resourceCreated(string $resourceName, array $requestData = []): void
                 . ' Responsible user id: ' . $requestData['responsible_user_id'] . PHP_EOL
                 . ' Created At: ' . date("Y-m-d H:i:s", $requestData['created_at']);
 
-            $data['custom_data']['text'] = $textData;
+            $data['custom_fields_values'] = [
+                "field_id" => 203,
+                "values" => [
+                    [
+                        "value" => $textData,
+                    ],
+                ],
+            ];
         }
     } else {
         http_response_code(400);
@@ -51,7 +58,14 @@ function resourceEdited(string $resourceName, array $requestData = []): void
             }
             $textData .= 'Update at: ' . date("Y-m-d H:i:s", $requestData['updated_at']);
 
-            $data['custom_data']['text'] = $textData;
+            $data['custom_fields_values'] = [
+                "field_id" => 203,
+                "values" => [
+                    [
+                        "value" => $textData,
+                    ],
+                ],
+            ];
             saveResourceState($resourceName, $requestData['id'], $requestData);
         }
     } else {
