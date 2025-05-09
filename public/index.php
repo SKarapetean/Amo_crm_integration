@@ -2,9 +2,9 @@
 
 header('Content-Type: application/json');
 
-require_once __DIR__ . '/../src/hook_handler.php';
-require_once __DIR__ . '/../src/logger.php';
 require_once __DIR__ . '/../src/auth.php';
+require_once __DIR__ . '/../src/logger.php';
+require_once __DIR__ . '/../src/hook_handler.php';
 
 function getRequestData(): array
 {
@@ -45,7 +45,9 @@ try {
                     'refresh_token' => $response['refresh_token'],
                     'token_type' => $response['token_type'],
                     'expires' => $response['expires_in'],
+                    'received_at' => time(),
                 ];
+
                 saveToken($tokenData);
                 echo json_encode(['success' => true]);
             } else {

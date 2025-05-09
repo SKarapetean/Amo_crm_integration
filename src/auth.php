@@ -49,11 +49,13 @@ function refreshToken(): void
     $out = sendAuthRequest('refresh_token', $accessToken['refresh_token'] ?? null);
     $response = json_decode($out, true);
 
-    $tokenData = [];
-    $tokenData['access_token'] = $response['access_token'];
-    $tokenData['refresh_token'] = $response['refresh_token'];
-    $tokenData['token_type'] = $response['token_type'];
-    $tokenData['expires'] = $response['expires_in'];
+    $tokenData = [
+        'access_token' => $response['access_token'],
+        'refresh_token' => $response['refresh_token'],
+        'token_type' => $response['token_type'],
+        'expires' => $response['expires_in'],
+        'received_at' => time(),
+    ];
 
     saveToken($tokenData);
 }

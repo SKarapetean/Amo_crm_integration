@@ -29,12 +29,12 @@ function resourceCreated(string $resourceName, array $requestData = []): void
 
     $token = getToken();
 
-    if (time() >= $token['expires']) {
+    if (time() >= $token['received_at'] + $token['expires_in']) {
         refreshToken();
         $token = getToken();
     }
 
-    $out = sendEditRequest($data, $token['access_token'], $data['id']);
+    $out = sendEditRequest($data, $token['access_token'], $resourceName, $data['id']);
 
     logToConsole($resourceName . ' create success:', $out);
 }
@@ -69,12 +69,12 @@ function resourceEdited(string $resourceName, array $requestData = []): void
 
     $token = getToken();
 
-    if (time() >= $token['expires']) {
+    if (time() >= $token['received_at'] + $token['expires_in']) {
         refreshToken();
         $token = getToken();
     }
 
-    $out = sendEditRequest($data, $token['access_token'], $data['id']);
+    $out = sendEditRequest($data, $token['access_token'], $resourceName, $data['id']);
 
     logToConsole('Leads edit success:', $out);
 }
