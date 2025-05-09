@@ -5,31 +5,6 @@ header('Content-Type: application/json');
 require_once __DIR__ . '/../src/hook_handler.php';
 require_once __DIR__ . '/../src/logger.php';
 
-function checkHook(): void
-{
-    $clientId = getenv('CLIENT_ID');
-    $clientSecret = getenv('CLIENT_SECRET');
-
-    if (empty($_GET['client_uuid']) || empty($_GET['signature']) || empty($_GET['account_id'])) {
-        throw new \Exception('Wrong hook format');
-    }
-
-    $hookClientId = $_GET['client_uuid'];
-    $hookSignature = $_GET['signature'];
-    $hookAccountId = (int)$_GET['account_id'];
-
-    if ($clientId !== $hookClientId) {
-        throw new \Exception('Invalid hook signature');
-    }
-
-    if (!hash_equals(
-        hash_hmac('sha256', sprintf('%s|%s', $clientId, $hookAccountId), $clientSecret),
-        $hookSignature
-    )) {
-        throw new \Exception('Invalid hook signature');
-    }
-}
-
 function getRequestData(): array
 {
     $contentType = $_SERVER["CONTENT_TYPE"] ?? '';
@@ -56,7 +31,6 @@ $requestUri = $_SERVER['REQUEST_URI'];
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
-    checkHook();
     if ($method === 'POST') {
         $data = getRequestData();
         if (str_starts_with($requestUri, '/contact/edit')) {
