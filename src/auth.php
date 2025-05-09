@@ -78,7 +78,7 @@ function sendAuthRequest(string $grantType, ?string $refreshToken = null)
         'redirect_uri' => getenv('REDIRECT_URI'),
     ];
 
-    if ($grantType === 'refresh_token') {
+    if ($grantType == 'refresh_token') {
         if (isset($refreshToken)) {
             $data['refresh_token'] = $refreshToken;
         } else {
@@ -87,7 +87,7 @@ function sendAuthRequest(string $grantType, ?string $refreshToken = null)
         }
     }
 
-    if ($grantType === 'authorization_code') {
+    if ($grantType == 'authorization_code') {
         $data['code'] = getenv('CODE');
     }
 
