@@ -51,7 +51,7 @@ function refreshToken(): void
     logToConsole('Refresh token request:');
 
     $accessToken = getResourceState('token', getenv('TOKEN_FILE'));
-    $out = sendAuthRequest('refresh_token', $accessToken['refresh_token']);
+    $out = sendAuthRequest('refresh_token', $accessToken['refresh_token'] ?? null);
     $response = json_decode($out, true);
 
     $tokenData = [];
@@ -63,7 +63,7 @@ function refreshToken(): void
     saveToken($tokenData);
 }
 
-function sendAuthRequest(string $grantType, string $refreshToken = null)
+function sendAuthRequest(string $grantType, ?string $refreshToken = null)
 {
     $data = [
         'client_id' => getenv('CLIENT_ID'),
@@ -72,10 +72,17 @@ function sendAuthRequest(string $grantType, string $refreshToken = null)
         'redirect_uri' => getenv('REDIRECT_URI'),
     ];
 
+    if ($grantType === 'refresh_token') {
+        if (isset($refreshToken)) {
+            $data['refresh_token'] = $refreshToken;
+        } else {
+            $grantType = 'authorization_code';
+            $data['grant_type'] = $grantType;
+        }
+    }
+
     if ($grantType === 'authorization_code') {
         $data['code'] = getenv('CODE');
-    } else if (isset($refreshToken)) {
-        $data['refresh_token'] = $refreshToken;
     }
 
     $curl = curl_init();
