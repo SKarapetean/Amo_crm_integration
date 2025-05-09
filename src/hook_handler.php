@@ -27,14 +27,7 @@ function resourceCreated(string $resourceName, array $requestData = []): void
         exit();
     }
 
-    $token = getToken();
-
-    if (time() >= $token['received_at'] + $token['expires_in']) {
-        refreshToken();
-        $token = getToken();
-    }
-
-    $out = sendEditRequest($data, $token['access_token'], $resourceName, $data['id']);
+    $out = sendEditRequest($data, $resourceName, $data['id']);
 
     logToConsole($resourceName . ' create success:', $out);
 }
@@ -67,20 +60,20 @@ function resourceEdited(string $resourceName, array $requestData = []): void
         exit();
     }
 
-    $token = getToken();
-
-    if (time() >= $token['received_at'] + $token['expires_in']) {
-        refreshToken();
-        $token = getToken();
-    }
-
-    $out = sendEditRequest($data, $token['access_token'], $resourceName, $data['id']);
+    $out = sendEditRequest($data, $resourceName, $data['id']);
 
     logToConsole('Leads edit success:', $out);
 }
 
-function sendEditRequest(array $data, string $accessToken, string $resourceUri, ?int $resourceId = null)
+function sendEditRequest(array $data, string $resourceUri, ?int $resourceId = null)
 {
+    $token = getToken();
+
+    if (time() >= $token['received'] + $token['expires']) {
+        refreshToken();
+        $token = getToken();
+    }
+
     $uri = 'api/v4/' . $resourceUri;
     if ($resourceId) {
         $uri .= '/' . $resourceId;
@@ -93,7 +86,7 @@ function sendEditRequest(array $data, string $accessToken, string $resourceUri, 
     curl_setopt($curl, CURLOPT_URL, getenv('ACCOUNT_DOMAIN') . $uri);
     curl_setopt($curl, CURLOPT_HTTPHEADER, [
         'Content-Type:application/json',
-        'Authorization: Bearer ' . $accessToken,
+        'Authorization: Bearer ' . $token['access_token'],
     ]);
     curl_setopt($curl, CURLOPT_HEADER, false);
     curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'PATCH');

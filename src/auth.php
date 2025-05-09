@@ -54,7 +54,7 @@ function refreshToken(): void
         'refresh_token' => $response['refresh_token'],
         'token_type' => $response['token_type'],
         'expires' => $response['expires_in'],
-        'received_at' => time(),
+        'received' => time(),
     ];
 
     saveToken($tokenData);
