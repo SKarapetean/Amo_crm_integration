@@ -3,7 +3,7 @@
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/../log/logger.php';
 
-function dealCreate(array $requestData): void
+function dealCreate(array $requestData = []): void
 {
     logMessage('Deal create request:', HOOK_LOG_FILE, $requestData);
 
@@ -36,7 +36,7 @@ function dealCreate(array $requestData): void
     logMessage('Deal create success:', HOOK_LOG_FILE, $out);
 }
 
-function dealEdit(array $requestData): void
+function dealEdit(array $requestData = []): void
 {
     logMessage('Deal edit request:', HOOK_LOG_FILE, $requestData);
 

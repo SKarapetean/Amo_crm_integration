@@ -1,8 +1,10 @@
 <?php
+
 header('Content-Type: application/json');
 define('HOOK_LOG_FILE', __DIR__ . '/../log/hook.txt');
 define('HOOK_ERR_FILE', __DIR__ . '/../log/hook_err.txt');
 
+require_once __DIR__ . '/../src/deal.php';
 require_once __DIR__ . '/../src/contact.php';
 require_once __DIR__ . '/../log/logger.php';
 
@@ -54,19 +56,29 @@ function getRequestData(): array
 
 loadEnv(__DIR__ . '/../.env');
 
+$requestUri = $_SERVER['REQUEST_URI'];
 $method = $_SERVER['REQUEST_METHOD'];
 
 try {
     if ($method === 'POST') {
         $data = getRequestData();
-
-        contactCreate($data);
+        if (str_starts_with($requestUri, '/contact/edit')) {
+            contactEdit($_POST);
+        } elseif (str_starts_with($requestUri, '/contact')) {
+            contactCreate($_POST);
+        } elseif (str_starts_with($requestUri, '/deal/edit')) {
+            dealEdit($_POST);
+        } elseif (str_starts_with($requestUri, '/deal')) {
+            dealCreate($_POST);
+        } else {
+            http_response_code(404);
+            echo json_encode(['error' => 'Route not found']);
+        }
     } else {
         logMessage('Request method error', HOOK_ERR_FILE, [
-            'uri' => 'contact/',
+            'uri' => $requestUri,
             'method' => $method,
         ]);
-
         http_response_code(405);
         echo json_encode(['error' => 'Method not allowed']);
     }
