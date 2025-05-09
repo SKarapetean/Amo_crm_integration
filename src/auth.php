@@ -1,11 +1,11 @@
 <?php
 
-require_once __DIR__ . '/../log/logger.php';
+require_once __DIR__ . '/logger.php';
+require_once __DIR__ . '/resource_handler.php';
 
 function getToken(): array
 {
-    $tokenFilePath = getenv('TOKEN_FILE');
-    $accessToken = json_decode(file_get_contents($tokenFilePath), true);
+    $accessToken = getResourceState('token', getenv('TOKEN_FILE'));
 
     if (
         !empty($accessToken)
@@ -39,8 +39,9 @@ function saveToken(array $accessToken): void
         && isset($accessToken['refresh_token'])
         && isset($accessToken['expires'])
     ) {
-        file_put_contents(getenv('TOKEN_FILE'), json_encode($accessToken));
+        saveResourceState('token', getenv('TOKEN_FILE'), $accessToken);
     } else {
+        logToConsole('Invalid access token');
         exit('Invalid access token ' . var_export($accessToken, true));
     }
 }
@@ -48,7 +49,7 @@ function saveToken(array $accessToken): void
 function refreshToken(): void
 {
     logToConsole('Refresh token request:');
-//    logMessage('Refresh token request:', __DIR__ . '/../log/log.txt');
+
     $out = sendAuthRequest('refresh_token');
     $response = json_decode($out, true);
 
@@ -113,11 +114,7 @@ function sendAuthRequest(string $grantType)
             'code' => $code,
             'response' => json_encode($out),
         ]);
-//        logMessage('AUTH REQUEST ERR:', HOOK_LOG_FILE, [
-//            'message' => $e->getMessage(),
-//            'code' => $code,
-//            'response' => json_encode($out),
-//        ]);
+
         die('Ошибка: ' . $e->getMessage() . PHP_EOL . 'Код ошибки: ' . $e->getCode());
     }
 }

@@ -1,20 +1,22 @@
 <?php
 
 require_once __DIR__ . '/auth.php';
-require_once __DIR__ . '/../log/logger.php';
+require_once __DIR__ . '/logger.php';
+require_once __DIR__ . '/resource_handler.php';
 
-function dealCreate(array $requestData = []): void
+function resourceCreated(string $resourceName, array $requestData = []): void
 {
-    logToConsole('Deal create request:', $requestData);
-//    logMessage('Deal create request:', HOOK_LOG_FILE, $requestData);
+    logToConsole($resourceName . ' create request:', $requestData);
 
     $data = [];
-    if (isset($requestData['deal']['add'])) {
-        $requestData = $requestData['deal']['add'];
-        if ($requestData['type'] === 'deal') {
+    $resourceType = preg_replace('/s$/', '', $resourceName);
+    if (isset($requestData[$resourceName]['add'])) {
+        $requestData = $requestData[$resourceName]['add'];
+        if ($requestData['type'] === $resourceType) {
+            saveResourceState($resourceName, $requestData['id'], $requestData);
             $data['id'] = $requestData['id'];
-            $textData = 'Name: ' . $requestData['name']
-                . ' Responsible user id: ' . $requestData['responsible_user_id']
+            $textData = 'Name: ' . $requestData['name'] . PHP_EOL
+                . ' Responsible user id: ' . $requestData['responsible_user_id'] . PHP_EOL
                 . ' Created At: ' . date("Y-m-d H:i:s", $requestData['created_at']);
 
             $data['custom_data']['text'] = $textData;
@@ -32,27 +34,32 @@ function dealCreate(array $requestData = []): void
         $token = getToken();
     }
 
-    $out = sendDealEditRequest($data, $token['access_token'], $data['id']);
+    $out = sendEditRequest($data, $token['access_token'], $data['id']);
 
-    logToConsole('Deal create success:', $out);
-//    logMessage('Deal create success:', HOOK_LOG_FILE, $out);
+    logToConsole($resourceName . ' create success:', $out);
 }
 
-function dealEdit(array $requestData = []): void
+function resourceEdited(string $resourceName, array $requestData = []): void
 {
-    logToConsole('Deal edit request:', $requestData);
-//    logMessage('Deal edit request:', HOOK_LOG_FILE, $requestData);
+    logToConsole($resourceName . ' edit request:', $requestData);
 
     $data = [];
-    if (isset($requestData['deal']['edit'])) {
-        $requestData = $requestData['deal']['edit'];
-        if ($requestData['type'] === 'deal') {
+    $resourceType = preg_replace('/s$/', '', $resourceName);
+    if (isset($requestData[$resourceName]['update'])) {
+        $requestData = $requestData[$resourceName]['edit'];
+        if ($requestData['type'] === $resourceType) {
+            $dataDiff = getResourceStateDiff($resourceName, $requestData['id'], $requestData);
             $data['id'] = $requestData['id'];
-            $textData = 'Name: ' . $requestData['name']
-                . ' Responsible user id: ' . $requestData['responsible_user_id']
-                . ' Created At: ' . date("Y-m-d H:i:s", $requestData['created_at']);
+            $textData = '';
+            foreach ($dataDiff as $diff) {
+                foreach ($diff as $key => $value) {
+                    $textData .= $key . ': ' . $value . PHP_EOL;
+                }
+            }
+            $textData .= 'Update at: ' .date("Y-m-d H:i:s", $requestData['updated_at']);
 
             $data['custom_data']['text'] = $textData;
+            saveResourceState($resourceName, $requestData['id'], $requestData);
         }
     } else {
         http_response_code(400);
@@ -67,17 +74,16 @@ function dealEdit(array $requestData = []): void
         $token = getToken();
     }
 
-    $out = sendDealEditRequest($data, $token['access_token'], $data['id']);
+    $out = sendEditRequest($data, $token['access_token'], $data['id']);
 
-    logToConsole('Deal edit success:', $out);
-//    logMessage('Deal edit success:', HOOK_LOG_FILE, $out);
+    logToConsole('Leads edit success:', $out);
 }
 
-function sendDealEditRequest(array $data, string $accessToken, ?int $dealId = null)
+function sendEditRequest(array $data, string $accessToken, string $resourceUri, ?int $resourceId = null)
 {
-    $uri = 'api/v4/leads/';
-    if ($dealId) {
-        $uri .= '/' . $dealId;
+    $uri = 'api/v4/' . $resourceUri;
+    if ($resourceId) {
+        $uri .= '/' . $resourceId;
     }
 
     $curl = curl_init();
@@ -114,16 +120,12 @@ function sendDealEditRequest(array $data, string $accessToken, ?int $dealId = nu
 
         return json_decode($out);
     } catch (\Exception $e) {
-        logToConsole('DEAL REQUEST ERR:', [
+        logToConsole(strtoupper($resourceId) . ' REQUEST ERR:', [
             'message' => $e->getMessage(),
             'code' => $code,
             'response' => json_encode($out),
         ]);
-//        logMessage('DEAL REQUEST ERR:', HOOK_LOG_FILE, [
-//            'message' => $e->getMessage(),
-//            'code' => $code,
-//            'response' => json_encode($out),
-//        ]);
+
         die('Ошибка: ' . $e->getMessage() . PHP_EOL . 'Код ошибки: ' . $e->getCode());
     }
 }
