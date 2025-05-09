@@ -86,6 +86,7 @@ function sendEditRequest(array $data, string $accessToken, string $resourceUri, 
         $uri .= '/' . $resourceId;
     }
 
+    logToConsole('URI: ' . $uri);
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curl, CURLOPT_USERAGENT, 'amoCRM-oAuth-client/1.0');
