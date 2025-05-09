@@ -76,15 +76,15 @@ function sendAuthRequest(string $grantType)
     }
 
     $curl = curl_init();
-    curl_setopt($curl,CURLOPT_RETURNTRANSFER, true);
-    curl_setopt($curl,CURLOPT_USERAGENT,'amoCRM-oAuth-client/1.0');
-    curl_setopt($curl,CURLOPT_URL, getenv('ACCOUNT_DOMAIN') . 'oauth2/access_token');
-    curl_setopt($curl,CURLOPT_HTTPHEADER,['Content-Type:application/json']);
-    curl_setopt($curl,CURLOPT_HEADER, false);
-    curl_setopt($curl,CURLOPT_CUSTOMREQUEST, 'POST');
-    curl_setopt($curl,CURLOPT_POSTFIELDS, json_encode($data));
-    curl_setopt($curl,CURLOPT_SSL_VERIFYPEER, 1);
-    curl_setopt($curl,CURLOPT_SSL_VERIFYHOST, 2);
+    curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($curl, CURLOPT_USERAGENT, 'amoCRM-oAuth-client/1.0');
+    curl_setopt($curl, CURLOPT_URL, getenv('ACCOUNT_DOMAIN') . 'oauth2/access_token');
+    curl_setopt($curl, CURLOPT_HTTPHEADER, ['Content-Type:application/json']);
+    curl_setopt($curl, CURLOPT_HEADER, false);
+    curl_setopt($curl, CURLOPT_CUSTOMREQUEST, 'POST');
+    curl_setopt($curl, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, 1);
+    curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, 2);
     $out = curl_exec($curl);
     $code = curl_getinfo($curl, CURLINFO_HTTP_CODE);
     curl_close($curl);
@@ -99,16 +99,13 @@ function sendAuthRequest(string $grantType)
         503 => 'Service unavailable',
     ];
 
-    try
-    {
+    try {
         if ($code < 200 || $code > 204) {
             throw new Exception(isset($errors[$code]) ? $errors[$code] : 'Undefined error', $code);
         }
 
         return $out;
-    }
-    catch(\Exception $e)
-    {
+    } catch (\Exception $e) {
         logToConsole('AUTH REQUEST ERR:', [
             'message' => $e->getMessage(),
             'code' => $code,

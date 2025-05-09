@@ -56,7 +56,7 @@ function resourceEdited(string $resourceName, array $requestData = []): void
                     $textData .= $key . ': ' . $value . PHP_EOL;
                 }
             }
-            $textData .= 'Update at: ' .date("Y-m-d H:i:s", $requestData['updated_at']);
+            $textData .= 'Update at: ' . date("Y-m-d H:i:s", $requestData['updated_at']);
 
             $data['custom_data']['text'] = $textData;
             saveResourceState($resourceName, $requestData['id'], $requestData);

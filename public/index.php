@@ -40,7 +40,7 @@ try {
         } elseif (str_starts_with($requestUri, '/lead/edit')) {
             resourceEdited('leads', $_POST);
         } elseif (str_starts_with($requestUri, '/lead')) {
-            resourceCreated('leads',$_POST);
+            resourceCreated('leads', $_POST);
         } else {
             http_response_code(404);
             echo json_encode(['error' => 'Route not found']);
