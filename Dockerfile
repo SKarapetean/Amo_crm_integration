@@ -15,6 +15,3 @@ RUN chown -R www-data:www-data /var/www/html
 
 # Use custom vhost config if available
 COPY docker/vhost.conf /etc/apache2/sites-available/000-default.conf
-
-# Expose port 80
-EXPOSE 80
