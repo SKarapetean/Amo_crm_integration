@@ -37,8 +37,7 @@ try {
             $code = $_GET['code'] ?? '';
 
             if (!empty($code)) {
-                $out = sendAuthRequest('authorization_code', $code);
-                $response = json_decode($out, true);
+                $response = sendAuthRequest('authorization_code', $code);
 
                 $tokenData = [
                     'access_token' => $response['access_token'],
@@ -53,10 +52,12 @@ try {
             } else {
                 http_response_code(422);
                 echo json_encode(['error' => 'Invalid request parameters.']);
+                exit();
             }
         } else {
             http_response_code(404);
             echo json_encode(['error' => 'Route not found']);
+            exit();
         }
     } else if ($method === 'POST') {
         $data = getRequestData();
@@ -71,6 +72,7 @@ try {
         } else {
             http_response_code(404);
             echo json_encode(['error' => 'Route not found']);
+            exit();
         }
     } else {
         logToConsole('Request method error', [
@@ -80,6 +82,7 @@ try {
 
         http_response_code(405);
         echo json_encode(['error' => 'Method not allowed']);
+        exit();
     }
 } catch (Exception $e) {
     logToConsole('Server error', [
@@ -91,4 +94,5 @@ try {
 
     http_response_code(500);
     echo json_encode(['error' => 'Internal error']);
+    exit();
 }

@@ -9,34 +9,33 @@ function resourceCreated(string $resourceName, array $requestData = []): void
     logToConsole($resourceName . ' create request:', $requestData);
 
     $data = [];
-    $resourceType = preg_replace('/s$/', '', $resourceName);
     if (isset($requestData[$resourceName]['add'])) {
         $requestData = $requestData[$resourceName]['add'];
-        if ($requestData['type'] === $resourceType) {
-            saveResourceState($resourceName, $requestData['id'], $requestData);
-            $data['id'] = $requestData['id'];
-            $textData = 'Name: ' . $requestData['name'] . PHP_EOL
-                . ' Responsible user id: ' . $requestData['responsible_user_id'] . PHP_EOL
-                . ' Created At: ' . date("Y-m-d H:i:s", $requestData['created_at']);
+        saveResourceState($resourceName, $requestData['id'], $requestData);
+        $data['id'] = $requestData['id'];
+        $textData = 'Name: ' . $requestData['name'] . PHP_EOL
+            . ' Responsible user id: ' . $requestData['responsible_user_id'] . PHP_EOL
+            . ' Created At: ' . date("Y-m-d H:i:s", $requestData['created_at']);
 
-            $data['custom_fields_values'] = [
-                "field_id" => 203,
-                "values" => [
-                    [
-                        "value" => $textData,
-                    ],
+        $data['custom_fields_values'] = [
+            "field_id" => 203,
+            "values" => [
+                [
+                    "value" => $textData,
                 ],
-            ];
-        }
+            ],
+        ];
     } else {
         http_response_code(400);
         echo json_encode(['error' => 'Wrong data']);
         exit();
     }
 
-    $out = sendEditRequest($data, $resourceName, $data['id']);
+    $out = sendEditRequest($resourceName, $data, $data['id']);
 
     logToConsole($resourceName . ' create success:', $out);
+    echo json_encode(['message' => 'Success']);
+    exit();
 }
 
 function resourceEdited(string $resourceName, array $requestData = []): void
@@ -44,42 +43,41 @@ function resourceEdited(string $resourceName, array $requestData = []): void
     logToConsole($resourceName . ' edit request:', $requestData);
 
     $data = [];
-    $resourceType = preg_replace('/s$/', '', $resourceName);
     if (isset($requestData[$resourceName]['update'])) {
         $requestData = $requestData[$resourceName]['edit'];
-        if ($requestData['type'] === $resourceType) {
-            $dataDiff = getResourceStateDiff($resourceName, $requestData['id'], $requestData);
-            $data['id'] = $requestData['id'];
-            $textData = '';
-            foreach ($dataDiff as $diff) {
-                foreach ($diff as $key => $value) {
-                    $textData .= $key . ': ' . $value . PHP_EOL;
-                }
+        $dataDiff = getResourceStateDiff($resourceName, $requestData['id'], $requestData);
+        $data['id'] = $requestData['id'];
+        $textData = '';
+        foreach ($dataDiff as $diff) {
+            foreach ($diff as $key => $value) {
+                $textData .= $key . ': ' . $value . PHP_EOL;
             }
-            $textData .= 'Update at: ' . date("Y-m-d H:i:s", $requestData['updated_at']);
-
-            $data['custom_fields_values'] = [
-                "field_id" => 203,
-                "values" => [
-                    [
-                        "value" => $textData,
-                    ],
-                ],
-            ];
-            saveResourceState($resourceName, $requestData['id'], $requestData);
         }
+        $textData .= 'Update at: ' . date("Y-m-d H:i:s", $requestData['updated_at']);
+
+        $data['custom_fields_values'] = [
+            "field_id" => 203,
+            "values" => [
+                [
+                    "value" => $textData,
+                ],
+            ],
+        ];
+        saveResourceState($resourceName, $requestData['id'], $requestData);
     } else {
         http_response_code(400);
         echo json_encode(['error' => 'Wrong data']);
         exit();
     }
 
-    $out = sendEditRequest($data, $resourceName, $data['id']);
+    $out = sendEditRequest($resourceName, $data, $data['id']);
 
-    logToConsole('Leads edit success:', $out);
+    logToConsole($resourceName . ' edit success:', $out);
+    echo json_encode(['message' => 'Success']);
+    exit();
 }
 
-function sendEditRequest(array $data, string $resourceUri, ?int $resourceId = null)
+function sendEditRequest(string $resourceUri, array $data = [], ?int $resourceId = null)
 {
     $token = getToken();
 
@@ -95,7 +93,6 @@ function sendEditRequest(array $data, string $resourceUri, ?int $resourceId = nu
 
     logToConsole($uri, $data);
 
-    logToConsole('URI: ' . $uri);
     $curl = curl_init();
     curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
     curl_setopt($curl, CURLOPT_USERAGENT, 'amoCRM-oAuth-client/1.0');
@@ -128,7 +125,7 @@ function sendEditRequest(array $data, string $resourceUri, ?int $resourceId = nu
             throw new Exception(isset($errors[$code]) ? $errors[$code] : 'Undefined error', $code);
         }
 
-        return json_decode($out);
+        return json_decode($out, true);
     } catch (\Exception $e) {
         logToConsole(strtoupper($resourceId) . ' REQUEST ERR:', [
             'message' => $e->getMessage(),

@@ -46,8 +46,7 @@ function refreshToken(): void
         logToConsole('Token not found:');
     }
 
-    $out = sendAuthRequest('refresh_token', $accessToken['refresh_token'] ?? null);
-    $response = json_decode($out, true);
+    $response = sendAuthRequest('refresh_token', $accessToken['refresh_token'] ?? null);
 
     $tokenData = [
         'access_token' => $response['access_token'],
@@ -109,7 +108,7 @@ function sendAuthRequest(string $grantType, ?string $token = null)
             throw new Exception(isset($errors[$code]) ? $errors[$code] : 'Undefined error', $code);
         }
 
-        return $out;
+        return json_decode($out, true);
     } catch (\Exception $e) {
         logToConsole('AUTH REQUEST ERR:', [
             'message' => $e->getMessage(),
