@@ -1,8 +1,10 @@
 <?php
 header('Content-Type: application/json');
+define('HOOK_LOG_FILE', __DIR__ . '/../log/hook.txt');
+define('HOOK_ERR_FILE', __DIR__ . '/../log/hook_err.txt');
 
-require_once '../src/deal.php';
-require_once '../src/logger.php';
+require_once __DIR__ . '/../src/deal.php';
+require_once __DIR__ . '/../log/logger.php';
 
 function loadEnv(string $path): void
 {
@@ -31,28 +33,49 @@ function loadEnv(string $path): void
 function getRequestData(): array
 {
     $contentType = $_SERVER["CONTENT_TYPE"] ?? '';
+    $method = $_SERVER['REQUEST_METHOD'];
 
-    if (str_contains($contentType, 'application/json')) {
-        $raw = file_get_contents("php://input");
-        return json_decode($raw, true) ?? [];
+    if ($method === 'POST') {
+        if (str_contains($contentType, 'application/json')) {
+            $raw = file_get_contents("php://input");
+            return json_decode($raw, true) ?? [];
+        }
+
+        if (
+            str_contains($contentType, 'application/x-www-form-urlencoded') ||
+            str_contains($contentType, 'multipart/form-data')
+        ) {
+            return $_POST;
+        }
     }
 
-    return $_POST;
+    return [];
 }
 
-loadEnv('../.env');
+loadEnv(__DIR__ . '/../.env');
 
 $method = $_SERVER['REQUEST_METHOD'];
 
-if ($method === 'POST') {
-    $data = getRequestData();
-    dealCreate($data);
-} else {
-    logMessage('Request method error', 'hook_err.log', [
-        'uri' => 'deal/',
+try {
+    if ($method === 'POST') {
+        $data = getRequestData();
+        dealCreate($data);
+    } else {
+        logMessage('Request method error', HOOK_ERR_FILE, [
+            'uri' => 'deal/',
+            'method' => $method,
+        ]);
+        http_response_code(405);
+        echo json_encode(['error' => 'Method not allowed']);
+    }
+} catch (Exception $e) {
+    logMessage('Server error', HOOK_ERR_FILE, [
+        'message' => $e->getMessage(),
+        'uri' => 'contact/',
         'method' => $method,
+        'trace' => $e->getTraceAsString(),
     ]);
-    http_response_code(405);
-    echo json_encode(['error' => 'Method not allowed']);
+    http_response_code(500);
+    echo json_encode(['error' => 'Internal error']);
 }
 

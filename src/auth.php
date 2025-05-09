@@ -1,5 +1,7 @@
 <?php
 
+require_once __DIR__ . '/../log/logger.php';
+
 function getToken(): array
 {
     $tokenFilePath = getenv('TOKEN_FILE');
@@ -45,6 +47,7 @@ function saveToken(array $accessToken): void
 
 function refreshToken(): void
 {
+    logMessage('Refresh token request:', __DIR__ . '/../log/log.txt');
     $out = sendAuthRequest('refresh_token');
     $response = json_decode($out, true);
 
@@ -104,6 +107,11 @@ function sendAuthRequest(string $grantType)
     }
     catch(\Exception $e)
     {
+        logMessage('AUTH REQUEST ERR:', HOOK_LOG_FILE, [
+            'message' => $e->getMessage(),
+            'code' => $code,
+            'response' => json_encode($out),
+        ]);
         die('Ошибка: ' . $e->getMessage() . PHP_EOL . 'Код ошибки: ' . $e->getCode());
     }
 }

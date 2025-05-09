@@ -1,6 +1,6 @@
 <?php
 
-require_once 'log/logger.php';
+require_once __DIR__ . '/log/logger.php';
 
 $method = $_SERVER['REQUEST_METHOD'] ?? 'UNKNOWN';
 $uri = $_SERVER['REQUEST_URI'] ?? '';
@@ -32,7 +32,7 @@ $log = [
     'files' => $files
 ];
 
-logMessage('Request main index.php', 'log/request.log', $log);
+logMessage('Request main index.php', __DIR__ . '/log/request.txt', $log);
 
 header('Content-Type: application/json');
 echo json_encode(['status' => 'logged']);

@@ -1,11 +1,11 @@
 <?php
 
-require_once 'auth.php';
-require_once 'logger.php';
+require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/../log/logger.php';
 
 function dealCreate(array $requestData): void
 {
-    logMessage('Deal create request:', 'hook.txt', $requestData);
+    logMessage('Deal create request:', HOOK_LOG_FILE, $requestData);
 
     $data = [];
     if (isset($requestData['deal']['add'])) {
@@ -33,12 +33,12 @@ function dealCreate(array $requestData): void
 
     $out = sendDealEditRequest($data, $token['access_token'], $data['id']);
 
-    logMessage('Deal edit success:', 'hook.txt', $out);
+    logMessage('Deal create success:', HOOK_LOG_FILE, $out);
 }
 
 function dealEdit(array $requestData): void
 {
-    logMessage('Deal edit request:', 'hook.txt', $requestData);
+    logMessage('Deal edit request:', HOOK_LOG_FILE, $requestData);
 
     $data = [];
     if (isset($requestData['deal']['edit'])) {
@@ -66,7 +66,7 @@ function dealEdit(array $requestData): void
 
     $out = sendDealEditRequest($data, $token['access_token'], $data['id']);
 
-    logMessage('Deal edit success:', 'hook.txt', $out);
+    logMessage('Deal edit success:', HOOK_LOG_FILE, $out);
 }
 
 function sendDealEditRequest(array $data, string $accessToken, ?int $dealId = null)
@@ -110,6 +110,11 @@ function sendDealEditRequest(array $data, string $accessToken, ?int $dealId = nu
 
         return json_decode($out);
     } catch (\Exception $e) {
+        logMessage('DEAL REQUEST ERR:', HOOK_LOG_FILE, [
+            'message' => $e->getMessage(),
+            'code' => $code,
+            'response' => json_encode($out),
+        ]);
         die('Ошибка: ' . $e->getMessage() . PHP_EOL . 'Код ошибки: ' . $e->getCode());
     }
 }
