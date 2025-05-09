@@ -16,6 +16,7 @@ function getToken(): array
 
         return $accessToken;
     } else {
+        logToConsole('Token not found:');
         $out = sendAuthRequest('authorization_code');
         $response = json_decode($out, true);
 
@@ -33,6 +34,7 @@ function getToken(): array
 
 function saveToken(array $accessToken): void
 {
+    logToConsole('Save token request:');
     if (
         !empty($accessToken)
         && isset($accessToken['access_token'])
@@ -51,6 +53,10 @@ function refreshToken(): void
     logToConsole('Refresh token request:');
 
     $accessToken = getResourceState('token', getenv('TOKEN_FILE'));
+    if (empty($accessToken)) {
+        logToConsole('Token not found:');
+    }
+
     $out = sendAuthRequest('refresh_token', $accessToken['refresh_token'] ?? null);
     $response = json_decode($out, true);
 
@@ -122,6 +128,6 @@ function sendAuthRequest(string $grantType, ?string $refreshToken = null)
             'response' => json_encode($out),
         ]);
 
-        die('Ошибка: ' . $e->getMessage() . PHP_EOL . 'Код ошибки: ' . $e->getCode());
+//        die('Ошибка: ' . $e->getMessage() . PHP_EOL . 'Код ошибки: ' . $e->getCode());
     }
 }
