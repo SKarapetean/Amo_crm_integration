@@ -54,7 +54,18 @@ function getRequestData(): array
     return [];
 }
 
-loadEnv(__DIR__ . '/../.env');
+$envPath = __DIR__ . '/../.env';
+$envSecondPath = __DIR__ . '/.env';
+if (file_exists($envPath)) {
+    loadEnv($envPath);
+    logToConsole('Env first path');
+}
+
+if (file_exists($envSecondPath)) {
+    loadEnv($envSecondPath);
+    logToConsole('Env second path');
+}
+//loadEnv(__DIR__ . '/../.env');
 
 $requestUri = $_SERVER['REQUEST_URI'];
 $method = $_SERVER['REQUEST_METHOD'];
@@ -75,20 +86,30 @@ try {
             echo json_encode(['error' => 'Route not found']);
         }
     } else {
-        logMessage('Request method error', HOOK_ERR_FILE, [
+        logToConsole('Request method error', [
             'uri' => $requestUri,
             'method' => $method,
         ]);
+//        logMessage('Request method error', HOOK_ERR_FILE, [
+//            'uri' => $requestUri,
+//            'method' => $method,
+//        ]);
         http_response_code(405);
         echo json_encode(['error' => 'Method not allowed']);
     }
 } catch (Exception $e) {
-    logMessage('Server error', HOOK_ERR_FILE, [
+    logToConsole('Server error', [
         'message' => $e->getMessage(),
         'uri' => 'contact/',
         'method' => $method,
         'trace' => $e->getTraceAsString(),
     ]);
+//    logMessage('Server error', HOOK_ERR_FILE, [
+//        'message' => $e->getMessage(),
+//        'uri' => 'contact/',
+//        'method' => $method,
+//        'trace' => $e->getTraceAsString(),
+//    ]);
     http_response_code(500);
     echo json_encode(['error' => 'Internal error']);
 }

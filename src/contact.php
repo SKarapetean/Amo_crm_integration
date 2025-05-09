@@ -5,7 +5,9 @@ require_once __DIR__ . '/../log/logger.php';
 
 function contactCreate(array $requestData = []): void
 {
-    logMessage('Contact create request:', HOOK_LOG_FILE, $requestData);
+    logToConsole('Contact create request:', $requestData);
+
+//    logMessage('Contact create request:', HOOK_LOG_FILE, $requestData);
 
     $data = [];
     if (isset($requestData['contacts']['add'])) {
@@ -33,13 +35,14 @@ function contactCreate(array $requestData = []): void
 
     $out = sendContactEditRequest($data, $token['access_token'], $data['id']);
 
-    logMessage('Contact create success:', HOOK_LOG_FILE, $out);
+    logToConsole('Contact create success:', $out);
+//    logMessage('Contact create success:', HOOK_LOG_FILE, $out);
 }
 
 function contactEdit(array $requestData = []): void
 {
-
-    logMessage('Contact edit request:', HOOK_LOG_FILE, $requestData);
+    logToConsole('Contact edit request:', $requestData);
+//    logMessage('Contact edit request:', HOOK_LOG_FILE, $requestData);
 
     $data = [];
     if (isset($requestData['contacts']['edit'])) {
@@ -67,7 +70,8 @@ function contactEdit(array $requestData = []): void
 
     $out = sendContactEditRequest($data, $token['access_token'], $data['id']);
 
-    logMessage('Contact edit success:', HOOK_LOG_FILE, $out);
+    logToConsole('Contact edit success:', $out);
+//    logMessage('Contact edit success:', HOOK_LOG_FILE, $out);
 }
 
 
@@ -112,11 +116,16 @@ function sendContactEditRequest(array $data, string $accessToken,  ?int $contact
 
         return json_decode($out);
     } catch (\Exception $e) {
-        logMessage('DEAL REQUEST ERR:', HOOK_LOG_FILE, [
+        logToConsole('DEAL REQUEST ERR:', [
             'message' => $e->getMessage(),
             'code' => $code,
             'response' => json_encode($out),
         ]);
+//        logMessage('DEAL REQUEST ERR:', HOOK_LOG_FILE, [
+//            'message' => $e->getMessage(),
+//            'code' => $code,
+//            'response' => json_encode($out),
+//        ]);
         die('Ошибка: ' . $e->getMessage() . PHP_EOL . 'Код ошибки: ' . $e->getCode());
     }
 }
